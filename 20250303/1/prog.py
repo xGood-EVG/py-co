@@ -1,4 +1,5 @@
 import cowsay
+import shlex
 from io import StringIO
 
 
@@ -85,9 +86,22 @@ if __name__ == "__main__":
     fld = Field(10, 10)
     plr = Player(fld)
     while (s := input()):
-        match s.split():
-            case ["addmon", name, x, y, msg]:
-                fld.addmon(x, y, name, msg)
+        match shlex.split(s):
+            case ["addmon", name, *rules]:
+                hello_ind = rules.find("hello")
+                hp_ind = rules.find("hp")
+                coords_ind = rules.find("coords")
+                if -1 in [hello_ind, hp_ind, coords_ind]:
+                    print("Invalid argument list")
+                    continue
+                try:
+                    x, y = int(rules[coords_ind+1]), int(rules[coords_ind+2])
+                    hp = int(rules[hp_ind+1])
+                    hello = rules[hello_ind]
+                except:
+                    print("Invalid arguments")
+
+                fld.addmon(x, y, name, hello)
             case ["up" | "down" | "left" | "right"] as cmd:
                 plr.move(*cmd)
             case _:
