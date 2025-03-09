@@ -56,11 +56,11 @@ class Player:
         self._x, self._y = (self._x + self.__class__.direct_map[direction][0]) % self.fld.x, (self._y + self.__class__.direct_map[direction][1]) % self.fld.y
         print(f"Moved to ({self._x}, {self._y})")
         if self.fld.field[self._x][self._y]:
-            encounter(self._x, self._y, self.fld.field, self.fld.field[self._x][self._y].name)
+            encounter(self._x, self._y, self.fld.field)
 
 
-def encounter(x, y, field, name):
-    field[x][y].greet(name)
+def encounter(x, y, field):
+    field[x][y].greet()
 
 
 class Monster:
@@ -74,8 +74,8 @@ class Monster:
             else:
                 self._func = lambda x : print(cowsay.cowsay(x, cow=name))
 
-    def greet(self, tp):
-        print(cowsay.cowsay(self._msg, tp))
+    def greet(self):
+        self._func(self._msg)
 
     def __bool__(self):
         return True
@@ -84,14 +84,10 @@ class Monster:
 if __name__ == "__main__":
     fld = Field(10, 10)
     plr = Player(fld)
-    print("<<< Welcome to Python-MUD 0.1 >>>")
     while (s := input()):
         match s.split():
-            case ["addmon", x, y, name, msg]:
-                if name not in cowsay.list_cows():
-                    print("Cannot add unknown monster")
-                else:
-                    fld.addmon(x, y, name, msg)
+            case ["addmon", name, x, y, msg]:
+                fld.addmon(x, y, name, msg)
             case ["up" | "down" | "left" | "right"] as cmd:
                 plr.move(*cmd)
             case _:
