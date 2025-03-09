@@ -70,7 +70,10 @@ if __name__ == "__main__":
     while (s := input()):
         match s.split():
             case ["addmon", x, y, name, msg]:
-                fld.addmon(x, y, name, msg)
+                if name not in cowsay.list_cows():
+                    print("Cannot add unknown monster")
+                else:
+                    fld.addmon(x, y, name, msg)
             case ["up" | "down" | "left" | "right"] as cmd:
                 plr.move(*cmd)
             case _:
