@@ -15,7 +15,7 @@ class Field:
     def y(self):
         return self._y
     
-    def addmon(self, x, y, msg):
+    def addmon(self, x, y, name, msg):
         try:
             x, y = int(x), int(y)
         except:
@@ -24,7 +24,10 @@ class Field:
         if x < 0 or y < 0 or x >= self.x or y >= self.y or not (hasattr(msg, "__str__") or hasattr(msg, "__repr__")):
             print("Invalid arguments")
             return
-        self.field[x][y] = Monster(x, y, msg)
+        if name not in cowsay.list_cows():
+            print("Cannot add unknown monster")
+            return
+        self.field[x][y] = Monster(x, y, name, msg)
 
 
 class Player:
@@ -48,8 +51,11 @@ def encounter(x, y, field):
 
 class Monster:
 
-    def __init__(self, x, y, msg, func=lambda x : print(cowsay.cowsay(x))):
-        self._x, self._y, self._msg, self._func = x, y, msg, func
+    def __init__(self, x, y, name, msg, func=None):
+        self._x, self._y, self.name, self._msg, self._func = x, y, name, msg, func
+        print(f"Added monster {name} to ({x}, {y}) saying {msg}")
+        if self._func is None:
+            self._func = lambda x : print(cowsay.cowsay(x, cow=name))
 
     def greet(self):
         self._func(self._msg)
@@ -63,8 +69,8 @@ if __name__ == "__main__":
     plr = Player(fld)
     while (s := input()):
         match s.split():
-            case ["addmon", x, y, msg]:
-                fld.addmon(x, y, msg)
+            case ["addmon", name, x, y, msg]:
+                fld.addmon(x, y, name, msg)
             case ["up" | "down" | "left" | "right"] as cmd:
                 plr.move(*cmd)
             case _:
