@@ -30,7 +30,7 @@ class Field:
     def y(self):
         return self._y
     
-    def addmon(self, x, y, name, msg):
+    def addmon(self, x, y, hp, name, msg):
         try:
             x, y = int(x), int(y)
         except:
@@ -42,7 +42,7 @@ class Field:
         if name not in [*cowsay.list_cows(), "jgsbat"]:
             print("Cannot add unknown monster")
             return
-        self.field[x][y] = Monster(x, y, name, msg)
+        self.field[x][y] = Monster(x, y, hp, name, msg)
 
 
 class Player:
@@ -66,8 +66,9 @@ def encounter(x, y, field, name):
 
 class Monster:
 
-    def __init__(self, x, y, name, msg, func=None):
+    def __init__(self, x, y, hp, name, msg, func=None):
         self._x, self._y, self.name, self._msg, self._func = x, y, name, msg, func
+        self._hp = hp
         print(f"Added monster {name} to ({x}, {y}) saying {msg}")
         if self._func is None:
             if name == "jgsbat":
@@ -102,7 +103,7 @@ if __name__ == "__main__":
                 except:
                     print("Invalid arguments")
 
-                fld.addmon(x, y, name, hello)
+                fld.addmon(x, y, hp, name, hello)
             case ["up" | "down" | "left" | "right"] as cmd:
                 plr.move(*cmd)
             case _:
