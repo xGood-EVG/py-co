@@ -69,7 +69,7 @@ if __name__ == "__main__":
     plr = Player(fld)
     while (s := input()):
         match s.split():
-            case ["addmon", name, x, y, msg]:
+            case ["addmon", x, y, name, msg]:
                 fld.addmon(x, y, name, msg)
             case ["up" | "down" | "left" | "right"] as cmd:
                 plr.move(*cmd)
