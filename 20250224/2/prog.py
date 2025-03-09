@@ -78,4 +78,3 @@ if __name__ == "__main__":
                 plr.move(*cmd)
             case _:
                 print("Invalid command")
-
