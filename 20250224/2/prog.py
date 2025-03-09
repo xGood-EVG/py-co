@@ -42,11 +42,11 @@ class Player:
         self._x, self._y = (self._x + self.__class__.direct_map[direction][0]) % self.fld.x, (self._y + self.__class__.direct_map[direction][1]) % self.fld.y
         print(f"Moved to ({self._x}, {self._y})")
         if self.fld.field[self._x][self._y]:
-            encounter(self._x, self._y, self.fld.field)
+            encounter(self._x, self._y, self.fld.field, self.fld.field[self._x][self._y].name)
 
 
-def encounter(x, y, field):
-    field[x][y].greet()
+def encounter(x, y, field, name):
+    field[x][y].greet(name)
 
 
 class Monster:
@@ -57,8 +57,8 @@ class Monster:
         if self._func is None:
             self._func = lambda x : print(cowsay.cowsay(x, cow=name))
 
-    def greet(self):
-        self._func(self._msg)
+    def greet(self, tp):
+        print(cowsay.cowsay(self._msg, tp))
 
     def __bool__(self):
         return True
