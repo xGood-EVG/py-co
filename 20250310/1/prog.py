@@ -38,24 +38,31 @@ class cmd_line(cmd.Cmd):
         fld.addmon(x, y, hp, name, hello)
     
     def do_attack(self, args):
+        try:
+            name = shlex.split(args)[0]
+        except:
+            print("Invalid command")
+            return
         if "with" in args:
             try:
-                _, weapon = shlex.split(args)
+                name, _, weapon = shlex.split(args)
                 if WEAPONS_LIST.get(weapon, None) is None:
                     print("Unknown weapon")
                     return
-                plr.attack(WEAPONS_LIST[weapon])
+                plr.attack(name, WEAPONS_LIST[weapon])
             except ValueError:
                 print("Need to specify the weapon")
                 return
         else:
-            plr.attack(WEAPONS_LIST[dflt_wpn])
+            plr.attack(name, WEAPONS_LIST[dflt_wpn])
     
     def complete_attack(self, text, line, ind1, ind2):
         words = shlex.split(line)
-        if len(words) < 2:
-            return []
         if len(words) == 2:
+            return [c for c in fld.monsters_dict.keys() if fld.monsters_dict[c] > 0 and c.startswith(text)]
+        if len(words) < 3:
+            return []
+        if len(words) == 3:
             return WEAPONS_LIST.keys()
         return [c for c in WEAPONS_LIST.keys() if c.startswith(text)]
 
@@ -79,6 +86,7 @@ class Field:
     def __init__(self, x, y):
         self._x, self._y = x, y
         self.field = list([0 for i in range(self._x)] for j in range(self._y))
+        self.monsters_dict = {}
 
     @property
     def x(self):
@@ -100,6 +108,7 @@ class Field:
         if name not in [*cowsay.list_cows(), "jgsbat"]:
             print("Cannot add unknown monster")
             return
+        self.monsters_dict[name] = self.monsters_dict.get(name, 0) + 1
         self.field[x][y] = Monster(x, y, hp, name, msg)
 
 
@@ -117,14 +126,14 @@ class Player:
         if self.fld.field[self._x][self._y]:
             encounter(self._x, self._y, self.fld.field)
 
-    def attack(self, damage):
-        if self.fld.field[self._x][self._y]:
+    def attack(self, name, damage):
+        if self.fld.field[self._x][self._y] and self.fld.field[self._x][self._y].name == name:
             result = self.fld.field[self._x][self._y].attacked(damage)
             if result:
                 del self.fld.field[self._x][self._y]
-                return
-            print("No monster here")
             return
+        print(f"No {name} here")
+        return
 
 
 def encounter(x, y, field):
