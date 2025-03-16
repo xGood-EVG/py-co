@@ -1,7 +1,40 @@
 import cowsay
 from io import StringIO
 import shlex
+import cmd
 
+
+class cmd_line(cmd.Cmd):
+
+    prompt = "(MUD) "
+
+    def do_up(self):
+        plr.move("up")
+    
+    def do_down(self):
+        plr.move("down")
+    
+    def do_left(self):
+        plr.move("left")
+    
+    def do_right(self):
+        plr.move("right")
+    
+    def do_addmon(self, args):
+        name, *rules = shlex.split()
+        try:
+            hello_ind = rules.index("hello")
+            hp_ind = rules.index("hp")
+            coords_ind = rules.index("coords")
+            x, y = int(rules[coords_ind+1]), int(rules[coords_ind+2])
+            hp = int(rules[hp_ind+1])
+            hello = rules[hello_ind]
+        except:
+            print("Invalid arguments")
+        fld.addmon(x, y, hp, name, hello)
+    
+    def do_attack():
+        pass
 
 jgsbat = cowsay.read_dot_cow(StringIO("""
     ,_                    _,
@@ -88,21 +121,4 @@ if __name__ == "__main__":
     fld = Field(10, 10)
     plr = Player(fld)
     print("<<< Welcome to Python-MUD 0.1 >>>")
-    while (s := input()):
-        match shlex.split(s):
-            case ["addmon", name, *rules]:
-                try:
-                    hello_ind = rules.index("hello")
-                    hp_ind = rules.index("hp")
-                    coords_ind = rules.index("coords")
-                    x, y = int(rules[coords_ind+1]), int(rules[coords_ind+2])
-                    hp = int(rules[hp_ind+1])
-                    hello = rules[hello_ind]
-                except:
-                    print("Invalid arguments")
-                fld.addmon(x, y, hp, name, hello)
-            case ["up" | "down" | "left" | "right"] as cmd:
-                plr.move(*cmd)
-            case _:
-                print("Invalid command")
-
+    cmd_line().cmdloop()
