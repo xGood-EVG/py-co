@@ -4,24 +4,28 @@ import shlex
 import cmd
 
 
+WEAPONS_LIST = {"sword": 10, "spear": 15, "axe": 20}
+dflt_wpn = "sword"
+
+
 class cmd_line(cmd.Cmd):
 
     prompt = "(MUD) "
 
-    def do_up(self):
+    def do_up(self, args):
         plr.move("up")
     
-    def do_down(self):
+    def do_down(self, args):
         plr.move("down")
     
-    def do_left(self):
+    def do_left(self, args):
         plr.move("left")
     
-    def do_right(self):
+    def do_right(self, args):
         plr.move("right")
     
     def do_addmon(self, args):
-        name, *rules = shlex.split()
+        name, *rules = shlex.split(args)
         try:
             hello_ind = rules.index("hello")
             hp_ind = rules.index("hp")
@@ -33,7 +37,27 @@ class cmd_line(cmd.Cmd):
             print("Invalid arguments")
         fld.addmon(x, y, hp, name, hello)
     
-    def do_attack(self):
+    def do_attack(self, args):
+        if "with" in args:
+            try:
+                _, weapon = shlex.split(args)
+                if WEAPONS_LIST.get(weapon, None) is None:
+                    print("Unknown weapon")
+                    return
+                plr.attack(WEAPONS_LIST[weapon])
+            except ValueError:
+                print("Need to specify the weapon")
+                return
+        else:
+            plr.attack(WEAPONS_LIST[dflt_wpn])
+    
+    def complete_attack(self, text, line, ind1, ind2):
+        words = shlex.split(line)
+        if len(words) < 2:
+            return []
+        if len(words) == 2:
+            return WEAPONS_LIST.keys()
+        return [c for c in WEAPONS_LIST.keys() if c.startswith(text)]
 
 
 jgsbat = cowsay.read_dot_cow(StringIO("""
@@ -93,9 +117,11 @@ class Player:
         if self.fld.field[self._x][self._y]:
             encounter(self._x, self._y, self.fld.field)
 
-    def attack(self):
-            if self.fld[self._x][self._y]:
-                self.fld[self._x][self._y].attacked(10)
+    def attack(self, damage):
+        if self.fld.field[self._x][self._y]:
+            result = self.fld.field[self._x][self._y].attacked(damage)
+            if result:
+                del self.fld.field[self._x][self._y]
                 return
             print("No monster here")
             return
@@ -128,9 +154,10 @@ class Monster:
         self._hp -= min(damage, self._hp)
         if self._hp == 0:
             print(f"{self.name} died")
-            del self
+            return True
         else:
             print(f"{self.name} now has {self._hp}")
+            return False
 
 
 
