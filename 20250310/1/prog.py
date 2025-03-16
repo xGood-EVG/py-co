@@ -34,6 +34,17 @@ class cmd_line(cmd.Cmd):
         fld.addmon(x, y, hp, name, hello)
     
     def do_attack(self):
+        try:
+            name = shlex.split(args)[0]
+            plr.attack(name)
+        except:
+            print("Invalid command")
+
+    def complete_attack(self, text, line, ind1, ind2):
+        words = shlex.split(line)
+        if len(words) > 2:
+            return []
+        return [c for c in fld.monsters_dict.keys() if fld.monsters_dict[c] > 0 and c.startswith(text)]
 
 
 jgsbat = cowsay.read_dot_cow(StringIO("""
@@ -55,6 +66,7 @@ class Field:
     def __init__(self, x, y):
         self._x, self._y = x, y
         self.field = list([0 for i in range(self._x)] for j in range(self._y))
+        self.monsters_dict = {}
 
     @property
     def x(self):
@@ -76,6 +88,7 @@ class Field:
         if name not in [*cowsay.list_cows(), "jgsbat"]:
             print("Cannot add unknown monster")
             return
+        self.monsters_dict[name] = self.monsters_dict.get(name, 0) + 1
         self.field[x][y] = Monster(x, y, hp, name, msg)
 
 
@@ -93,12 +106,15 @@ class Player:
         if self.fld.field[self._x][self._y]:
             encounter(self._x, self._y, self.fld.field)
 
-    def attack(self):
-            if self.fld[self._x][self._y]:
-                self.fld[self._x][self._y].attacked(10)
-                return
-            print("No monster here")
+    def attack(self, name):
+        if self.fld.field[self._x][self._y] and self.fld.field[self._x][self._y].name == name:
+            result = self.fld.field[self._x][self._y].attacked(10)
+            if result:
+                del self.fld.field[self._x][self._y]
             return
+        print(f"No {name} here")
+        return
+
 
 
 def encounter(x, y, field):
