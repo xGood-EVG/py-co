@@ -33,8 +33,8 @@ class cmd_line(cmd.Cmd):
             print("Invalid arguments")
         fld.addmon(x, y, hp, name, hello)
     
-    def do_attack():
-        pass
+    def do_attack(self):
+
 
 jgsbat = cowsay.read_dot_cow(StringIO("""
     ,_                    _,
@@ -93,6 +93,13 @@ class Player:
         if self.fld.field[self._x][self._y]:
             encounter(self._x, self._y, self.fld.field)
 
+    def attack(self):
+            if self.fld[self._x][self._y]:
+                self.fld[self._x][self._y].attacked(10)
+                return
+            print("No monster here")
+            return
+
 
 def encounter(x, y, field):
     field[x][y].greet()
@@ -115,6 +122,16 @@ class Monster:
 
     def __bool__(self):
         return True
+
+    def attacked(self, damage):
+        print(f"Attacked {self.name}, damage {min(damage, self._hp)}")
+        self._hp -= min(damage, self._hp)
+        if self._hp == 0:
+            print(f"{self.name} died")
+            del self
+        else:
+            print(f"{self.name} now has {self._hp}")
+
 
 
 if __name__ == "__main__":
