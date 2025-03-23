@@ -56,8 +56,8 @@ class Player:
 
     def move(self, direction):
         self._x, self._y = (self._x + self.__class__.direct_map[direction][0]) % self.fld.x, (self._y + self.__class__.direct_map[direction][1]) % self.fld.y
-       msg = f"Moved to ({self._x}, {self._y})\n"
-       if self.fld.field[self._x][self._y]:
+        msg = f"Moved to ({self._x}, {self._y})\n"
+        if self.fld.field[self._x][self._y]:
             msg += f"Found {self.fld.field[self._x][self._y].name} {self.fld.field[self._x][self._y]._msg}\n"
         conn.send(msg.encode())
 
