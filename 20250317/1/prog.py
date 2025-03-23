@@ -42,7 +42,7 @@ class Field:
     
     def addmon(self, x, y, hp, name, msg):
         self.monsters_dict[name] = self.monsters_dict.get(name, 0) + 1
-        conn.send(json.dumps(self.monsters_dict))
+        x, y = int(x), int(y)
         self.field[x][y] = Monster(x, y, hp, name, msg)
 
 
@@ -56,14 +56,15 @@ class Player:
 
     def move(self, direction):
         self._x, self._y = (self._x + self.__class__.direct_map[direction][0]) % self.fld.x, (self._y + self.__class__.direct_map[direction][1]) % self.fld.y
-       conn.send(f"Moved to ({self._x}, {self._y})\n".encode())
+       msg = f"Moved to ({self._x}, {self._y})\n"
        if self.fld.field[self._x][self._y]:
-            conn.send(f"Found {self.fls.field[self._x][self._y].name} {self.fls.field[self._x][self._y]._msg}\n".encode())
+            msg += f"Found {self.fld.field[self._x][self._y].name} {self.fld.field[self._x][self._y]._msg}\n"
+        conn.send(msg.encode())
 
 
     def attack(self, name, damage):
         if self.fld.field[self._x][self._y] and self.fld.field[self._x][self._y].name == name:
-            result = self.fld.field[self._x][self._y].attacked(damage)
+            result = self.fld.field[self._x][self._y].attacked(int(damage))
             if result:
                 del self.fld.field[self._x][self._y]
             return
@@ -78,9 +79,9 @@ def encounter(x, y, field):
 class Monster:
 
     def __init__(self, x, y, hp, name, msg, func=None):
-        self._x, self._y, self.name, self._msg, self._func = x, y, name, msg, func
-        self._hp = hp
-        conn.send(f"Added monster {name} to ({x}, {y}) saying {msg}\n".encode())
+        self._x, self._y, self.name, self._msg, self._func = int(x), int(y), name, msg, func
+        self._hp = int(hp)
+        conn.send((json.dumps(fld.monsters_dict)+"\n" + f"Added monster {name} to ({x}, {y}) saying {msg}\n").encode())
         if self._func is None:
             if name == "jgsbat":
                 self._func = lambda x : print(cowsay.cowsay(x, cowfile=jgsbat))
@@ -94,13 +95,15 @@ class Monster:
         return True
 
     def attacked(self, damage):
-        conn.send(f"Attacked {self.name}, damage {min(damage, self._hp)}\n")
+        msg = f"Attacked {self.name}, damage {min(damage, self._hp)}\n"
         self._hp -= min(damage, self._hp)
         if self._hp == 0:
-            print(f"{self.name} died")
+            msg += f"{self.name} died\n"
+            conn.send(msg.encode())
             return True
         else:
-            print(f"{self.name} now has {self._hp}")
+            msg += f"{self.name} now has {self._hp}\n"
+            conn.send(msg.encode())
             return False
 
 
@@ -121,8 +124,8 @@ if __name__ == "__main__":
                 print(info)
                 if info[0] == "move":
                     plr.move(info[1])
-                if info == ["info", "host"]:
-                    print(addr[0])
-                    conn.sendall(addr[0].encode())
-                if info == ["info", "port"]:
-                    conn.sendall(str(addr[1]).encode())
+                if info[0] == "addmon":
+                    fld.addmon(*info[1:])
+                if info[0] == "attack":
+                    info[2] = int(info[2])
+                    plr.attack(*info[1:])

@@ -11,6 +11,10 @@ dflt_wpn = "sword"
 MONSTER_DICT = {}
 
 
+def encounter(name, msg):
+    print(cowsay.cowsay(msg, cow=name))
+
+
 class cmd_line(cmd.Cmd):
 
     def __init__(self, sock):
@@ -21,24 +25,40 @@ class cmd_line(cmd.Cmd):
 
     def do_up(self, args):
         self.socket.send("move up".encode())
+        data = self.socket.recv(1024).decode().split('\n')
+        print(data[0])
+        if data[1].startswith("Found"):
+            encounter(*data[1].split()[1:])
         #plr.move("up")
     
     def do_down(self, args):
         self.socket.send("move down".encode())
+        data = self.socket.recv(1024).decode().split('\n')
+        print(data[0])
+        if data[1].startswith("Found"):
+            encounter(*data[1].split()[1:])
         #plr.move("down")
     
     def do_left(self, args):
         self.socket.send("move left".encode())
+        data = self.socket.recv(1024).decode().split('\n')
+        print(data[0])
+        if data[1].startswith("Found"):
+            encounter(*data[1].split()[1:])
         #plr.move("left")
     
     def do_right(self, args):
         self.socket.send("move right".encode())
+        data = self.socket.recv(1024).decode().split('\n')
+        print(data[0])
+        if data[1].startswith("Found"):
+            encounter(*data[1].split()[1:])
         #plr.move("right")
     
     def do_addmon(self, args):
         global MONSTER_DICT
-        name, *rules = shlex.split(args)
         try:
+            name, *rules = shlex.split(args)
             hello_ind = rules.index("hello")
             hp_ind = rules.index("hp")
             coords_ind = rules.index("coords")
@@ -58,8 +78,12 @@ class cmd_line(cmd.Cmd):
                 return
         except:
             print("Invalid arguments")
-        self.socket.sendall(f"addmon {x} {y} {hp} {name} {hello}")
-        MONSTER_DICT = json.loads(self.socket.recv(1024).decode())
+            return
+        self.socket.sendall(f"addmon {x} {y} {hp} {name} {hello}".encode())
+        data = self.socket.recv(1024).decode()
+        data = data.split('\n')
+        MONSTER_DICT = json.loads(data[0])
+        print(data[1])
         #fld.addmon(x, y, hp, name, hello)
     
     def do_attack(self, args):
@@ -74,13 +98,23 @@ class cmd_line(cmd.Cmd):
                 if WEAPONS_LIST.get(weapon, None) is None:
                     print("Unknown weapon")
                     return
-                self.socket.send(f"attack {name} {WEAPONS_LIST[weapon]}")
+                print("kekw")
+                self.socket.send(f"attack {name} {WEAPONS_LIST[weapon]}".encode())
+                print("kekw")
+                data = self.socket.recv(1024).decode().split('\n')
+                print(data[0])
+                if (data[1] != ""):
+                    print(data[1])
                 #plr.attack(name, WEAPONS_LIST[weapon])
             except ValueError:
                 print("Need to specify the weapon")
                 return
         else:
-            self.socket.send(f"attack {name} {WEAPONS_LIST[dflt_wpn]}")
+            self.socket.send(f"attack {name} {WEAPONS_LIST[dflt_wpn]}".encode())
+            data = self.socket.recv(1024).decode().split('\n')
+            print(data[0])
+            if (data[1] != ""):
+                print(data[1])
             #plr.attack(name, WEAPONS_LIST[dflt_wpn])
     
     def complete_attack(self, text, line, ind1, ind2):
