@@ -1,0 +1,813 @@
+From fa70ca6075bb112cf72b373dbd8731f318cc1b44 Mon Sep 17 00:00:00 2001
+From: xGood <zenia2003725@gmail.com>
+Date: Sun, 23 Mar 2025 15:56:28 +0300
+Subject: [PATCH 4/5] Added patch directory
+
+---
+ 20250317/1/patchdir/0001-First-commit.patch   | 253 ++++++++++++++++++
+ 20250317/1/patchdir/0002-Added-client.patch   | 109 ++++++++
+ 20250317/1/patchdir/0003-multiplayer.patch    | 218 +++++++++++++++
+ .../1/patchdir/0004-Finished-homework.patch   | 190 +++++++++++++
+ 4 files changed, 770 insertions(+)
+ create mode 100644 20250317/1/patchdir/0001-First-commit.patch
+ create mode 100644 20250317/1/patchdir/0002-Added-client.patch
+ create mode 100644 20250317/1/patchdir/0003-multiplayer.patch
+ create mode 100644 20250317/1/patchdir/0004-Finished-homework.patch
+
+diff --git a/20250317/1/patchdir/0001-First-commit.patch b/20250317/1/patchdir/0001-First-commit.patch
+new file mode 100644
+index 0000000..12e0015
+--- /dev/null
++++ b/20250317/1/patchdir/0001-First-commit.patch
+@@ -0,0 +1,253 @@
++From e39c7545ebd8defb08bcd8e6262ea2f91b048607 Mon Sep 17 00:00:00 2001
++From: xGood <zenia2003725@gmail.com>
++Date: Sun, 23 Mar 2025 15:32:11 +0300
++Subject: [PATCH 1/4] First commit
++
++---
++ 20250317/1/Pipfile      |  12 +++
++ 20250317/1/Pipfile.lock |  29 +++++++
++ 20250317/1/prog.py      | 177 ++++++++++++++++++++++++++++++++++++++++
++ 3 files changed, 218 insertions(+)
++ create mode 100644 20250317/1/Pipfile
++ create mode 100644 20250317/1/Pipfile.lock
++ create mode 100644 20250317/1/prog.py
++
++diff --git a/20250317/1/Pipfile b/20250317/1/Pipfile
++new file mode 100644
++index 0000000..74e36ac
++--- /dev/null
+++++ b/20250317/1/Pipfile
++@@ -0,0 +1,12 @@
+++[[source]]
+++url = "https://pypi.org/simple"
+++verify_ssl = true
+++name = "pypi"
+++
+++[packages]
+++cowsay = "*"
+++
+++[dev-packages]
+++
+++[requires]
+++python_version = "3.12"
++diff --git a/20250317/1/Pipfile.lock b/20250317/1/Pipfile.lock
++new file mode 100644
++index 0000000..ec0d53a
++--- /dev/null
+++++ b/20250317/1/Pipfile.lock
++@@ -0,0 +1,29 @@
+++{
+++    "_meta": {
+++        "hash": {
+++            "sha256": "9f7b6db61ca519ee45616dceb388cf4af787acc4fce1f128738b9e2d4d4942bc"
+++        },
+++        "pipfile-spec": 6,
+++        "requires": {
+++            "python_version": "3.12"
+++        },
+++        "sources": [
+++            {
+++                "name": "pypi",
+++                "url": "https://pypi.org/simple",
+++                "verify_ssl": true
+++            }
+++        ]
+++    },
+++    "default": {
+++        "cowsay": {
+++            "hashes": [
+++                "sha256:274b1e6fc1b966d53976333eb90ac94cb07a450a700b455af9fbdf882244b30a"
+++            ],
+++            "index": "pypi",
+++            "markers": "python_version >= '3.8'",
+++            "version": "==6.1"
+++        }
+++    },
+++    "develop": {}
+++}
++diff --git a/20250317/1/prog.py b/20250317/1/prog.py
++new file mode 100644
++index 0000000..8f852f4
++--- /dev/null
+++++ b/20250317/1/prog.py
++@@ -0,0 +1,177 @@
+++import cowsay
+++from io import StringIO
+++import shlex
+++import cmd
+++
+++
+++WEAPONS_LIST = {"sword": 10, "spear": 15, "axe": 20}
+++dflt_wpn = "sword"
+++
+++
+++class cmd_line(cmd.Cmd):
+++
+++    prompt = "(MUD) "
+++
+++    def do_up(self, args):
+++        plr.move("up")
+++    
+++    def do_down(self, args):
+++        plr.move("down")
+++    
+++    def do_left(self, args):
+++        plr.move("left")
+++    
+++    def do_right(self, args):
+++        plr.move("right")
+++    
+++    def do_addmon(self, args):
+++        name, *rules = shlex.split(args)
+++        try:
+++            hello_ind = rules.index("hello")
+++            hp_ind = rules.index("hp")
+++            coords_ind = rules.index("coords")
+++            x, y = int(rules[coords_ind+1]), int(rules[coords_ind+2])
+++            hp = int(rules[hp_ind+1])
+++            hello = rules[hello_ind]
+++        except:
+++            print("Invalid arguments")
+++        fld.addmon(x, y, hp, name, hello)
+++    
+++    def do_attack(self, args):
+++        try:
+++            name = shlex.split(args)[0]
+++        except:
+++            print("Invalid command")
+++            return
+++        if "with" in args:
+++            try:
+++                name, _, weapon = shlex.split(args)
+++                if WEAPONS_LIST.get(weapon, None) is None:
+++                    print("Unknown weapon")
+++                    return
+++                plr.attack(name, WEAPONS_LIST[weapon])
+++            except ValueError:
+++                print("Need to specify the weapon")
+++                return
+++        else:
+++            plr.attack(name, WEAPONS_LIST[dflt_wpn])
+++    
+++    def complete_attack(self, text, line, ind1, ind2):
+++        words = shlex.split(line)
+++        if len(words) == 2:
+++            return [c for c in fld.monsters_dict.keys() if fld.monsters_dict[c] > 0 and c.startswith(text)]
+++        if len(words) < 3:
+++            return []
+++        if len(words) == 3:
+++            return WEAPONS_LIST.keys()
+++        return [c for c in WEAPONS_LIST.keys() if c.startswith(text)]
+++
+++
+++jgsbat = cowsay.read_dot_cow(StringIO("""
+++    ,_                    _,
+++    ) '-._  ,_    _,  _.-' (
+++    )  _.-'.|\\--//|.'-._  (
+++     )'   .'\/o\/o\/'.   `(
+++      ) .' . \====/ . '. (
+++       )  / <<    >> \  (
+++        '-._/``  ``\_.-'
+++  jgs     __\\'--'//__
+++         (((""`  `"")))
+++"""))
+++
+++
+++
+++class Field:
+++
+++    def __init__(self, x, y):
+++        self._x, self._y = x, y
+++        self.field = list([0 for i in range(self._x)] for j in range(self._y))
+++        self.monsters_dict = {}
+++
+++    @property
+++    def x(self):
+++        return self._x
+++    
+++    @property
+++    def y(self):
+++        return self._y
+++    
+++    def addmon(self, x, y, hp, name, msg):
+++        try:
+++            x, y = int(x), int(y)
+++        except:
+++            print("Invalid arguments")
+++            return
+++        if x < 0 or y < 0 or x >= self.x or y >= self.y or not (hasattr(msg, "__str__") or hasattr(msg, "__repr__")):
+++            print("Invalid arguments")
+++            return
+++        if name not in [*cowsay.list_cows(), "jgsbat"]:
+++            print("Cannot add unknown monster")
+++            return
+++        self.monsters_dict[name] = self.monsters_dict.get(name, 0) + 1
+++        self.field[x][y] = Monster(x, y, hp, name, msg)
+++
+++
+++class Player:
+++
+++    direct_map = {"up": (0, -1), "down": (0, 1), "left": (-1, 0), "right": (1, 0)}
+++
+++    def __init__(self, field):
+++        self._x, self._y = 0, 0
+++        self.fld = field
+++
+++    def move(self, direction):
+++        self._x, self._y = (self._x + self.__class__.direct_map[direction][0]) % self.fld.x, (self._y + self.__class__.direct_map[direction][1]) % self.fld.y
+++        print(f"Moved to ({self._x}, {self._y})")
+++        if self.fld.field[self._x][self._y]:
+++            encounter(self._x, self._y, self.fld.field)
+++
+++    def attack(self, name, damage):
+++        if self.fld.field[self._x][self._y] and self.fld.field[self._x][self._y].name == name:
+++            result = self.fld.field[self._x][self._y].attacked(damage)
+++            if result:
+++                del self.fld.field[self._x][self._y]
+++            return
+++        print(f"No {name} here")
+++        return
+++
+++
+++def encounter(x, y, field):
+++    field[x][y].greet()
+++
+++
+++class Monster:
+++
+++    def __init__(self, x, y, hp, name, msg, func=None):
+++        self._x, self._y, self.name, self._msg, self._func = x, y, name, msg, func
+++        self._hp = hp
+++        print(f"Added monster {name} to ({x}, {y}) saying {msg}")
+++        if self._func is None:
+++            if name == "jgsbat":
+++                self._func = lambda x : print(cowsay.cowsay(x, cowfile=jgsbat))
+++            else:
+++                self._func = lambda x : print(cowsay.cowsay(x, cow=name))
+++
+++    def greet(self):
+++        self._func(self._msg)
+++
+++    def __bool__(self):
+++        return True
+++
+++    def attacked(self, damage):
+++        print(f"Attacked {self.name}, damage {min(damage, self._hp)}")
+++        self._hp -= min(damage, self._hp)
+++        if self._hp == 0:
+++            print(f"{self.name} died")
+++            return True
+++        else:
+++            print(f"{self.name} now has {self._hp}")
+++            return False
+++
+++
+++
+++if __name__ == "__main__":
+++    fld = Field(10, 10)
+++    plr = Player(fld)
+++    print("<<< Welcome to Python-MUD 0.1 >>>")
+++    cmd_line().cmdloop()
++-- 
++2.34.1
++
+diff --git a/20250317/1/patchdir/0002-Added-client.patch b/20250317/1/patchdir/0002-Added-client.patch
+new file mode 100644
+index 0000000..338215a
+--- /dev/null
++++ b/20250317/1/patchdir/0002-Added-client.patch
+@@ -0,0 +1,109 @@
++From a12ff059c473db591d65381e7aa426eb244b35f9 Mon Sep 17 00:00:00 2001
++From: xGood <zenia2003725@gmail.com>
++Date: Sun, 23 Mar 2025 15:34:19 +0300
++Subject: [PATCH 2/4] Added client
++
++---
++ 20250317/1/client.py | 90 ++++++++++++++++++++++++++++++++++++++++++++
++ 1 file changed, 90 insertions(+)
++ create mode 100644 20250317/1/client.py
++
++diff --git a/20250317/1/client.py b/20250317/1/client.py
++new file mode 100644
++index 0000000..1f0f332
++--- /dev/null
+++++ b/20250317/1/client.py
++@@ -0,0 +1,90 @@
+++import cmd
+++import sys
+++import socket
+++import shlex
+++import json
+++
+++
+++WEAPONS_LIST = {"sword": 10, "spear": 15, "axe": 20}
+++dflt_wpn = "sword"
+++MONSTER_DICT = {}
+++
+++
+++class cmd_line(cmd.Cmd):
+++
+++    def __init__(self, sock):
+++        self.socket = sock
+++        super().__init__()
+++
+++    prompt = "(MUD) "
+++
+++    def do_up(self, args):
+++        self.socket.send("move up".encode())
+++        #plr.move("up")
+++    
+++    def do_down(self, args):
+++        self.socket.send("move down".encode())
+++        #plr.move("down")
+++    
+++    def do_left(self, args):
+++        self.socket.send("move left".encode())
+++        #plr.move("left")
+++    
+++    def do_right(self, args):
+++        self.socket.send("move right".encode())
+++        #plr.move("right")
+++    
+++    def do_addmon(self, args):
+++        global MONSTER_DICT
+++        name, *rules = shlex.split(args)
+++        try:
+++            hello_ind = rules.index("hello")
+++            hp_ind = rules.index("hp")
+++            coords_ind = rules.index("coords")
+++            x, y = int(rules[coords_ind+1]), int(rules[coords_ind+2])
+++            hp = int(rules[hp_ind+1])
+++            hello = rules[hello_ind+1]
+++        except:
+++            print("Invalid arguments")
+++        self.socket.sendall(f"addmon {x} {y} {hp} {name} {hello}")
+++        MONSTER_DICT = json.loads(self.socket.recv(1024).decode())
+++        #fld.addmon(x, y, hp, name, hello)
+++    
+++    def do_attack(self, args):
+++        try:
+++            name = shlex.split(args)[0]
+++        except:
+++            print("Invalid command")
+++            return
+++        if "with" in args:
+++            try:
+++                name, _, weapon = shlex.split(args)
+++                if WEAPONS_LIST.get(weapon, None) is None:
+++                    print("Unknown weapon")
+++                    return
+++                self.socket.send(f"attack {name} {WEAPONS_LIST[weapon]}")
+++                #plr.attack(name, WEAPONS_LIST[weapon])
+++            except ValueError:
+++                print("Need to specify the weapon")
+++                return
+++        else:
+++            self.socket.send(f"attack {name} {WEAPONS_LIST[dflt_wpn]}")
+++            #plr.attack(name, WEAPONS_LIST[dflt_wpn])
+++    
+++    def complete_attack(self, text, line, ind1, ind2):
+++        words = shlex.split(line)
+++        if len(words) == 2:
+++            return [c for c in MONSTER_DICT.keys() if MONSTER_DICT[c] > 0 and c.startswith(text)]
+++        if len(words) < 3:
+++            return []
+++        if len(words) == 3:
+++            return WEAPONS_LIST.keys()
+++        return [c for c in WEAPONS_LIST.keys() if c.startswith(text)]
+++
+++if __name__ == "__main__":
+++    print("<<< Welcome to Python-MUD 0.1 >>>")
+++    host = "localhost" if len(sys.argv) < 2 else sys.argv[1]
+++    port = 1337 if len(sys.argv) < 3 else int(sys.argv[2])
+++    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+++        s.connect((host, port))
+++        cmd_line(sock=s).cmdloop()
++-- 
++2.34.1
++
+diff --git a/20250317/1/patchdir/0003-multiplayer.patch b/20250317/1/patchdir/0003-multiplayer.patch
+new file mode 100644
+index 0000000..9d5bfbc
+--- /dev/null
++++ b/20250317/1/patchdir/0003-multiplayer.patch
+@@ -0,0 +1,218 @@
++From 27a929af1f71a2f5d9926fee84ac2f2c5e8e98e8 Mon Sep 17 00:00:00 2001
++From: xGood <zenia2003725@gmail.com>
++Date: Sun, 23 Mar 2025 15:46:18 +0300
++Subject: [PATCH 3/4] multiplayer
++
++---
++ 20250317/1/client.py |  13 ++++++
++ 20250317/1/prog.py   | 109 ++++++++++++-------------------------------
++ 2 files changed, 43 insertions(+), 79 deletions(-)
++
++diff --git a/20250317/1/client.py b/20250317/1/client.py
++index 1f0f332..522cecd 100644
++--- a/20250317/1/client.py
+++++ b/20250317/1/client.py
++@@ -3,6 +3,7 @@ import sys
++ import socket
++ import shlex
++ import json
+++import cowsay
++ 
++ 
++ WEAPONS_LIST = {"sword": 10, "spear": 15, "axe": 20}
++@@ -44,6 +45,17 @@ class cmd_line(cmd.Cmd):
++             x, y = int(rules[coords_ind+1]), int(rules[coords_ind+2])
++             hp = int(rules[hp_ind+1])
++             hello = rules[hello_ind+1]
+++            try:
+++                x, y = int(x), int(y)
+++            except:
+++                print("Invalid arguments")
+++                return
+++            if name not in [*cowsay.list_cows(), "jgsbat"]:
+++                print("Cannot add unknown monster")
+++                return
+++            if x < 0 or y < 0 or x >= field_x or y >= field_y or not (hasattr(hello, "__str__") or hasattr(hello, "__repr__")):
+++                print("Invalid arguments")
+++                return
++         except:
++             print("Invalid arguments")
++         self.socket.sendall(f"addmon {x} {y} {hp} {name} {hello}")
++@@ -87,4 +99,5 @@ if __name__ == "__main__":
++     port = 1337 if len(sys.argv) < 3 else int(sys.argv[2])
++     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
++         s.connect((host, port))
+++        field_x, field_y = list(map(int, s.recv(1024).decode().split()))
++         cmd_line(sock=s).cmdloop()
++diff --git a/20250317/1/prog.py b/20250317/1/prog.py
++index 8f852f4..1869380 100644
++--- a/20250317/1/prog.py
+++++ b/20250317/1/prog.py
++@@ -2,71 +2,15 @@ import cowsay
++ from io import StringIO
++ import shlex
++ import cmd
+++import socket
+++import sys
+++import json
++ 
++ 
++ WEAPONS_LIST = {"sword": 10, "spear": 15, "axe": 20}
++ dflt_wpn = "sword"
++ 
++ 
++-class cmd_line(cmd.Cmd):
++-
++-    prompt = "(MUD) "
++-
++-    def do_up(self, args):
++-        plr.move("up")
++-    
++-    def do_down(self, args):
++-        plr.move("down")
++-    
++-    def do_left(self, args):
++-        plr.move("left")
++-    
++-    def do_right(self, args):
++-        plr.move("right")
++-    
++-    def do_addmon(self, args):
++-        name, *rules = shlex.split(args)
++-        try:
++-            hello_ind = rules.index("hello")
++-            hp_ind = rules.index("hp")
++-            coords_ind = rules.index("coords")
++-            x, y = int(rules[coords_ind+1]), int(rules[coords_ind+2])
++-            hp = int(rules[hp_ind+1])
++-            hello = rules[hello_ind]
++-        except:
++-            print("Invalid arguments")
++-        fld.addmon(x, y, hp, name, hello)
++-    
++-    def do_attack(self, args):
++-        try:
++-            name = shlex.split(args)[0]
++-        except:
++-            print("Invalid command")
++-            return
++-        if "with" in args:
++-            try:
++-                name, _, weapon = shlex.split(args)
++-                if WEAPONS_LIST.get(weapon, None) is None:
++-                    print("Unknown weapon")
++-                    return
++-                plr.attack(name, WEAPONS_LIST[weapon])
++-            except ValueError:
++-                print("Need to specify the weapon")
++-                return
++-        else:
++-            plr.attack(name, WEAPONS_LIST[dflt_wpn])
++-    
++-    def complete_attack(self, text, line, ind1, ind2):
++-        words = shlex.split(line)
++-        if len(words) == 2:
++-            return [c for c in fld.monsters_dict.keys() if fld.monsters_dict[c] > 0 and c.startswith(text)]
++-        if len(words) < 3:
++-            return []
++-        if len(words) == 3:
++-            return WEAPONS_LIST.keys()
++-        return [c for c in WEAPONS_LIST.keys() if c.startswith(text)]
++-
++-
++ jgsbat = cowsay.read_dot_cow(StringIO("""
++     ,_                    _,
++     ) '-._  ,_    _,  _.-' (
++@@ -97,18 +41,8 @@ class Field:
++         return self._y
++     
++     def addmon(self, x, y, hp, name, msg):
++-        try:
++-            x, y = int(x), int(y)
++-        except:
++-            print("Invalid arguments")
++-            return
++-        if x < 0 or y < 0 or x >= self.x or y >= self.y or not (hasattr(msg, "__str__") or hasattr(msg, "__repr__")):
++-            print("Invalid arguments")
++-            return
++-        if name not in [*cowsay.list_cows(), "jgsbat"]:
++-            print("Cannot add unknown monster")
++-            return
++         self.monsters_dict[name] = self.monsters_dict.get(name, 0) + 1
+++        conn.send(json.dumps(self.monsters_dict))
++         self.field[x][y] = Monster(x, y, hp, name, msg)
++ 
++ 
++@@ -122,9 +56,10 @@ class Player:
++ 
++     def move(self, direction):
++         self._x, self._y = (self._x + self.__class__.direct_map[direction][0]) % self.fld.x, (self._y + self.__class__.direct_map[direction][1]) % self.fld.y
++-        print(f"Moved to ({self._x}, {self._y})")
++-        if self.fld.field[self._x][self._y]:
++-            encounter(self._x, self._y, self.fld.field)
+++       conn.send(f"Moved to ({self._x}, {self._y})\n".encode())
+++       if self.fld.field[self._x][self._y]:
+++            conn.send(f"Found {self.fls.field[self._x][self._y].name} {self.fls.field[self._x][self._y]._msg}\n".encode())
+++
++ 
++     def attack(self, name, damage):
++         if self.fld.field[self._x][self._y] and self.fld.field[self._x][self._y].name == name:
++@@ -132,7 +67,7 @@ class Player:
++             if result:
++                 del self.fld.field[self._x][self._y]
++             return
++-        print(f"No {name} here")
+++        conn.send(f"No {name} here\n".encode())
++         return
++ 
++ 
++@@ -145,7 +80,7 @@ class Monster:
++     def __init__(self, x, y, hp, name, msg, func=None):
++         self._x, self._y, self.name, self._msg, self._func = x, y, name, msg, func
++         self._hp = hp
++-        print(f"Added monster {name} to ({x}, {y}) saying {msg}")
+++        conn.send(f"Added monster {name} to ({x}, {y}) saying {msg}\n".encode())
++         if self._func is None:
++             if name == "jgsbat":
++                 self._func = lambda x : print(cowsay.cowsay(x, cowfile=jgsbat))
++@@ -159,7 +94,7 @@ class Monster:
++         return True
++ 
++     def attacked(self, damage):
++-        print(f"Attacked {self.name}, damage {min(damage, self._hp)}")
+++        conn.send(f"Attacked {self.name}, damage {min(damage, self._hp)}\n")
++         self._hp -= min(damage, self._hp)
++         if self._hp == 0:
++             print(f"{self.name} died")
++@@ -169,9 +104,25 @@ class Monster:
++             return False
++ 
++ 
++-
++ if __name__ == "__main__":
++     fld = Field(10, 10)
++     plr = Player(fld)
++-    print("<<< Welcome to Python-MUD 0.1 >>>")
++-    cmd_line().cmdloop()
+++    host = "localhost" if len(sys.argv) < 2 else sys.argv[1]
+++    port = 1337 if len(sys.argv) < 3 else int(sys.argv[2])
+++    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+++        s.bind((host, port))
+++        s.listen()
+++        conn, addr = s.accept()
+++        with conn:
+++            conn.sendall(f"{10} {10}".encode())
+++            print('Connected by', addr)
+++            while data := conn.recv(1024):
+++                info = shlex.split(data.decode())
+++                print(info)
+++                if info[0] == "move":
+++                    plr.move(info[1])
+++                if info == ["info", "host"]:
+++                    print(addr[0])
+++                    conn.sendall(addr[0].encode())
+++                if info == ["info", "port"]:
+++                    conn.sendall(str(addr[1]).encode())
++-- 
++2.34.1
++
+diff --git a/20250317/1/patchdir/0004-Finished-homework.patch b/20250317/1/patchdir/0004-Finished-homework.patch
+new file mode 100644
+index 0000000..6b1056b
+--- /dev/null
++++ b/20250317/1/patchdir/0004-Finished-homework.patch
+@@ -0,0 +1,190 @@
++From 736d699503abed927e502032e0e7100c99add1d9 Mon Sep 17 00:00:00 2001
++From: xGood <zenia2003725@gmail.com>
++Date: Sun, 23 Mar 2025 15:54:12 +0300
++Subject: [PATCH 4/4] Finished homework
++
++---
++ 20250317/1/client.py | 44 +++++++++++++++++++++++++++++++++++++++-----
++ 20250317/1/prog.py   | 33 ++++++++++++++++++---------------
++ 2 files changed, 57 insertions(+), 20 deletions(-)
++
++diff --git a/20250317/1/client.py b/20250317/1/client.py
++index 522cecd..5fa4917 100644
++--- a/20250317/1/client.py
+++++ b/20250317/1/client.py
++@@ -11,6 +11,10 @@ dflt_wpn = "sword"
++ MONSTER_DICT = {}
++ 
++ 
+++def encounter(name, msg):
+++    print(cowsay.cowsay(msg, cow=name))
+++
+++
++ class cmd_line(cmd.Cmd):
++ 
++     def __init__(self, sock):
++@@ -21,24 +25,40 @@ class cmd_line(cmd.Cmd):
++ 
++     def do_up(self, args):
++         self.socket.send("move up".encode())
+++        data = self.socket.recv(1024).decode().split('\n')
+++        print(data[0])
+++        if data[1].startswith("Found"):
+++            encounter(*data[1].split()[1:])
++         #plr.move("up")
++     
++     def do_down(self, args):
++         self.socket.send("move down".encode())
+++        data = self.socket.recv(1024).decode().split('\n')
+++        print(data[0])
+++        if data[1].startswith("Found"):
+++            encounter(*data[1].split()[1:])
++         #plr.move("down")
++     
++     def do_left(self, args):
++         self.socket.send("move left".encode())
+++        data = self.socket.recv(1024).decode().split('\n')
+++        print(data[0])
+++        if data[1].startswith("Found"):
+++            encounter(*data[1].split()[1:])
++         #plr.move("left")
++     
++     def do_right(self, args):
++         self.socket.send("move right".encode())
+++        data = self.socket.recv(1024).decode().split('\n')
+++        print(data[0])
+++        if data[1].startswith("Found"):
+++            encounter(*data[1].split()[1:])
++         #plr.move("right")
++     
++     def do_addmon(self, args):
++         global MONSTER_DICT
++-        name, *rules = shlex.split(args)
++         try:
+++            name, *rules = shlex.split(args)
++             hello_ind = rules.index("hello")
++             hp_ind = rules.index("hp")
++             coords_ind = rules.index("coords")
++@@ -58,8 +78,12 @@ class cmd_line(cmd.Cmd):
++                 return
++         except:
++             print("Invalid arguments")
++-        self.socket.sendall(f"addmon {x} {y} {hp} {name} {hello}")
++-        MONSTER_DICT = json.loads(self.socket.recv(1024).decode())
+++            return
+++        self.socket.sendall(f"addmon {x} {y} {hp} {name} {hello}".encode())
+++        data = self.socket.recv(1024).decode()
+++        data = data.split('\n')
+++        MONSTER_DICT = json.loads(data[0])
+++        print(data[1])
++         #fld.addmon(x, y, hp, name, hello)
++     
++     def do_attack(self, args):
++@@ -74,13 +98,23 @@ class cmd_line(cmd.Cmd):
++                 if WEAPONS_LIST.get(weapon, None) is None:
++                     print("Unknown weapon")
++                     return
++-                self.socket.send(f"attack {name} {WEAPONS_LIST[weapon]}")
+++                print("kekw")
+++                self.socket.send(f"attack {name} {WEAPONS_LIST[weapon]}".encode())
+++                print("kekw")
+++                data = self.socket.recv(1024).decode().split('\n')
+++                print(data[0])
+++                if (data[1] != ""):
+++                    print(data[1])
++                 #plr.attack(name, WEAPONS_LIST[weapon])
++             except ValueError:
++                 print("Need to specify the weapon")
++                 return
++         else:
++-            self.socket.send(f"attack {name} {WEAPONS_LIST[dflt_wpn]}")
+++            self.socket.send(f"attack {name} {WEAPONS_LIST[dflt_wpn]}".encode())
+++            data = self.socket.recv(1024).decode().split('\n')
+++            print(data[0])
+++            if (data[1] != ""):
+++                print(data[1])
++             #plr.attack(name, WEAPONS_LIST[dflt_wpn])
++     
++     def complete_attack(self, text, line, ind1, ind2):
++diff --git a/20250317/1/prog.py b/20250317/1/prog.py
++index 1869380..3dedff2 100644
++--- a/20250317/1/prog.py
+++++ b/20250317/1/prog.py
++@@ -42,7 +42,7 @@ class Field:
++     
++     def addmon(self, x, y, hp, name, msg):
++         self.monsters_dict[name] = self.monsters_dict.get(name, 0) + 1
++-        conn.send(json.dumps(self.monsters_dict))
+++        x, y = int(x), int(y)
++         self.field[x][y] = Monster(x, y, hp, name, msg)
++ 
++ 
++@@ -56,14 +56,15 @@ class Player:
++ 
++     def move(self, direction):
++         self._x, self._y = (self._x + self.__class__.direct_map[direction][0]) % self.fld.x, (self._y + self.__class__.direct_map[direction][1]) % self.fld.y
++-       conn.send(f"Moved to ({self._x}, {self._y})\n".encode())
+++       msg = f"Moved to ({self._x}, {self._y})\n"
++        if self.fld.field[self._x][self._y]:
++-            conn.send(f"Found {self.fls.field[self._x][self._y].name} {self.fls.field[self._x][self._y]._msg}\n".encode())
+++            msg += f"Found {self.fld.field[self._x][self._y].name} {self.fld.field[self._x][self._y]._msg}\n"
+++        conn.send(msg.encode())
++ 
++ 
++     def attack(self, name, damage):
++         if self.fld.field[self._x][self._y] and self.fld.field[self._x][self._y].name == name:
++-            result = self.fld.field[self._x][self._y].attacked(damage)
+++            result = self.fld.field[self._x][self._y].attacked(int(damage))
++             if result:
++                 del self.fld.field[self._x][self._y]
++             return
++@@ -78,9 +79,9 @@ def encounter(x, y, field):
++ class Monster:
++ 
++     def __init__(self, x, y, hp, name, msg, func=None):
++-        self._x, self._y, self.name, self._msg, self._func = x, y, name, msg, func
++-        self._hp = hp
++-        conn.send(f"Added monster {name} to ({x}, {y}) saying {msg}\n".encode())
+++        self._x, self._y, self.name, self._msg, self._func = int(x), int(y), name, msg, func
+++        self._hp = int(hp)
+++        conn.send((json.dumps(fld.monsters_dict)+"\n" + f"Added monster {name} to ({x}, {y}) saying {msg}\n").encode())
++         if self._func is None:
++             if name == "jgsbat":
++                 self._func = lambda x : print(cowsay.cowsay(x, cowfile=jgsbat))
++@@ -94,13 +95,15 @@ class Monster:
++         return True
++ 
++     def attacked(self, damage):
++-        conn.send(f"Attacked {self.name}, damage {min(damage, self._hp)}\n")
+++        msg = f"Attacked {self.name}, damage {min(damage, self._hp)}\n"
++         self._hp -= min(damage, self._hp)
++         if self._hp == 0:
++-            print(f"{self.name} died")
+++            msg += f"{self.name} died\n"
+++            conn.send(msg.encode())
++             return True
++         else:
++-            print(f"{self.name} now has {self._hp}")
+++            msg += f"{self.name} now has {self._hp}\n"
+++            conn.send(msg.encode())
++             return False
++ 
++ 
++@@ -121,8 +124,8 @@ if __name__ == "__main__":
++                 print(info)
++                 if info[0] == "move":
++                     plr.move(info[1])
++-                if info == ["info", "host"]:
++-                    print(addr[0])
++-                    conn.sendall(addr[0].encode())
++-                if info == ["info", "port"]:
++-                    conn.sendall(str(addr[1]).encode())
+++                if info[0] == "addmon":
+++                    fld.addmon(*info[1:])
+++                if info[0] == "attack":
+++                    info[2] = int(info[2])
+++                    plr.attack(*info[1:])
++\ No newline at end of file
++-- 
++2.34.1
++
+-- 
+2.34.1
+

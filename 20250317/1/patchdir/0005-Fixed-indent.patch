@@ -1,0 +1,27 @@
+From 66fb3479db21f89a101ddcbac55866be4f51471f Mon Sep 17 00:00:00 2001
+From: xGood <zenia2003725@gmail.com>
+Date: Sun, 23 Mar 2025 16:05:55 +0300
+Subject: [PATCH 5/5] Fixed indent
+
+---
+ 20250317/1/prog.py | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/20250317/1/prog.py b/20250317/1/prog.py
+index 3dedff2..22763e2 100644
+--- a/20250317/1/prog.py
++++ b/20250317/1/prog.py
+@@ -56,8 +56,8 @@ class Player:
+ 
+     def move(self, direction):
+         self._x, self._y = (self._x + self.__class__.direct_map[direction][0]) % self.fld.x, (self._y + self.__class__.direct_map[direction][1]) % self.fld.y
+-       msg = f"Moved to ({self._x}, {self._y})\n"
+-       if self.fld.field[self._x][self._y]:
++        msg = f"Moved to ({self._x}, {self._y})\n"
++        if self.fld.field[self._x][self._y]:
+             msg += f"Found {self.fld.field[self._x][self._y].name} {self.fld.field[self._x][self._y]._msg}\n"
+         conn.send(msg.encode())
+ 
+-- 
+2.34.1
+
