@@ -3,6 +3,7 @@ import sys
 import socket
 import shlex
 import json
+import cowsay
 
 
 WEAPONS_LIST = {"sword": 10, "spear": 15, "axe": 20}
@@ -44,6 +45,17 @@ class cmd_line(cmd.Cmd):
             x, y = int(rules[coords_ind+1]), int(rules[coords_ind+2])
             hp = int(rules[hp_ind+1])
             hello = rules[hello_ind+1]
+            try:
+                x, y = int(x), int(y)
+            except:
+                print("Invalid arguments")
+                return
+            if name not in [*cowsay.list_cows(), "jgsbat"]:
+                print("Cannot add unknown monster")
+                return
+            if x < 0 or y < 0 or x >= field_x or y >= field_y or not (hasattr(hello, "__str__") or hasattr(hello, "__repr__")):
+                print("Invalid arguments")
+                return
         except:
             print("Invalid arguments")
         self.socket.sendall(f"addmon {x} {y} {hp} {name} {hello}")
@@ -87,4 +99,5 @@ if __name__ == "__main__":
     port = 1337 if len(sys.argv) < 3 else int(sys.argv[2])
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.connect((host, port))
+        field_x, field_y = list(map(int, s.recv(1024).decode().split()))
         cmd_line(sock=s).cmdloop()
