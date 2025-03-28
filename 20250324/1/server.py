@@ -10,19 +10,20 @@ import threading
 
 WEAPONS_LIST = {"sword": 10, "spear": 15, "axe": 20}
 dflt_wpn = "sword"
-        
+FIELDX, FIELDY = 10, 10
 
-# jgsbat = cowsay.read_dot_cow(StringIO("""
-#     ,_                    _,
-#     ) '-._  ,_    _,  _.-' (
-#     )  _.-'.|\\--//|.'-._  (
-#      )'   .'\/o\/o\/'.   `(
-#       ) .' . \====/ . '. (
-#        )  / <<    >> \  (
-#         '-._/``  ``\_.-'
-#   jgs     __\\'--'//__
-#          (((""`  `"")))
-# """))
+
+jgsbat = cowsay.read_dot_cow(StringIO("""
+    ,_                    _,
+    ) '-._  ,_    _,  _.-' (
+    )  _.-'.|\\--//|.'-._  (
+     )'   .'\/o\/o\/'.   `(
+      ) .' . \====/ . '. (
+       )  / <<    >> \  (
+        '-._/``  ``\_.-'
+  jgs     __\\'--'//__
+         (((""`  `"")))
+"""))
 
 
 class Communicator():
@@ -42,12 +43,12 @@ class Communicator():
 
     def sendall(self, msg: str):
         """Sends given message to all logined users"""
-        for conn in self.connections:
+        for conn in self.connections.values():
             conn.sendall(msg.encode())
 
     def send(self, conn: socket.socket, msg: str):
         """Sends given message to given socket"""
-        conn.sendall(msg)
+        conn.sendall(msg.encode())
     
     def player_exists(self, login: str) -> bool:
         return True if self.connections.get(login, False) else False
@@ -91,13 +92,13 @@ class Player:
         cm.send(conn, msg)
         #encounter(self._x, self._y, self.fld.field)
     
-    def attack(self, name, damage):
+    def attack(self, name, damage, conn):
         if self.fld.field[self._x][self._y] and self.fld.field[self._x][self._y].name == name:
             result = self.fld.field[self._x][self._y].attacked(int(damage), self.login)
             if result:
                 del self.fld.field[self._x][self._y]
             return
-        conn.send(f"No {name} here\n".encode())
+        cm.send(conn, f"No {name} here\n")
         return
 
 
@@ -112,7 +113,7 @@ class Monster:
         self._x, self._y, self.name, self._msg, self._func = int(x), int(y), name, msg, func
         self._hp = int(hp)
         cm.sendall(f"User {plr.login} added monster {name} to ({x}, {y}) saying {msg}\n")
-        cm.sendall("srv added monster {name} {x} {y}")
+        cm.sendall(f"srv added monster {name}\n")
         if self._func is None:
             if name == "jgsbat":
                 self._func = lambda x : print(cowsay.cowsay(x, cowfile=jgsbat))
@@ -130,6 +131,7 @@ class Monster:
         self._hp -= min(damage, self._hp)
         if self._hp == 0:
             msg += f"{self.name} died\n"
+            msg += f"srv died monster {self.name}\n"
             cm.sendall(msg)
             return True
         else:
@@ -145,29 +147,31 @@ def handler(conn, addr):
         if cm.player_exists(login):
             conn.send("Login already in use!\n".encode())
             return
-        cm.sendall(f"User {login} logged in\n")
-        cm.sendall(f"srv user login {login}")
         cm.add_connection(conn, addr, login)
-        plr = Player(fld)
+        cm.sendall(f"User {login} logged in\n")
+        cm.send(conn, f"srv user login {login}\n")
+        cm.send(conn, f"srv fieldsz {FIELDX} {FIELDY}\n")
+        cm.send(conn, f"srv existing monsters {json.dumps(fld.monsters_dict)}\n")
+        plr = Player(fld, login)
         while data := conn.recv(1024):
             info = shlex.split(data.decode())
             print(info)
             if info[0] == "move":
                 plr.move(info[1], conn)
             if info[0] == "addmon":
-                fld.addmon(*info[1:])
-            if info[0] == "attack": 
+                fld.addmon(*info[1:], plr)
+            if info[0] == "attack":
                 info[2] = int(info[2])
-                plr.attack(*info[1:])
+                plr.attack(*info[1:], conn)
+    cm.remove_connection(addr)
     cm.sendall(f"User {login} left the game\n")
     cm.sendall(f"srv user left {login}")
-    cm.remove_connection(addr)
 
 
 if __name__ == "__main__":
-    fld = Field(10, 10)
-    host = "localhost" if len(sys.argv) < 2 else sys.argv[1]
-    port = 1337 if len(sys.argv) < 3 else int(sys.argv[2])
+    fld = Field(FIELDX, FIELDY)
+    port = 1337 if len(sys.argv) < 2 else int(sys.argv[1])
+    host = "localhost" if len(sys.argv) < 3 else sys.argv[2]
     cm = Communicator()
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.bind((host, port))
@@ -176,4 +180,3 @@ if __name__ == "__main__":
             conn, addr = s.accept()
             client = threading.Thread(target=handler, args=(conn, addr))
             client.start()
-            handler(conn, addr)
