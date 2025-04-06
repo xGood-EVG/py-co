@@ -19,14 +19,16 @@ field_x, field_y = 0, 0
 
 
 def encounter(name, msg):
+    """This happens when you meet a monster"""
     print(cowsay.cowsay(msg, cow=name))
 
 
 class MessageParser():
+    """Class for parsing incoming messages"""
 
     @classmethod
     def parse(cls, data: str):
-        """Processes upcoming message"""
+        """Parse upcoming message"""
         for msg in data.split('\n'):
             if not msg.startswith("srv"):
                 print(f"{msg}\n{cmd_line.prompt}{readline.get_line_buffer()}",
@@ -51,30 +53,37 @@ class MessageParser():
 
 
 class cmd_line(cmd.Cmd):
+    """Shell for the game"""
 
     def __init__(self, sock):
+        """Initialize socket for sending messages"""
         self.socket = sock
         super().__init__()
 
     prompt = "(MUD) "
 
     def do_up(self, args):
+        """Move up"""
         self.socket.send("move up".encode())
 
     def do_down(self, args):
+        """Move down"""
         self.socket.send("move down".encode())
 
     def do_left(self, args):
+        """Move left"""
         self.socket.send("move left".encode())
 
     def do_right(self, args):
+        """Move right"""
         self.socket.send("move right".encode())
 
     def do_sayall(self, args):
+        """Send message for all users"""
         self.socket.send(("sayall "+args).encode())
 
     def do_addmon(self, args):
-
+        """Add a monster with given attributes, required are name, coordinates, message and hp"""
         try:
             name, *rules = shlex.split(args)
             hello_ind = rules.index("hello")
@@ -96,6 +105,7 @@ class cmd_line(cmd.Cmd):
         self.socket.sendall(f"addmon {x} {y} {hp} {name} {hello}".encode())
 
     def do_attack(self, args):
+        """Attack the monster in the player's cell with weapon, if specified"""
         try:
             name = shlex.split(args)[0]
         except Exception:
@@ -119,6 +129,7 @@ class cmd_line(cmd.Cmd):
             )
 
     def complete_attack(self, text, line, ind1, ind2):
+        """Autocomplete for function attack"""
         words = shlex.split(line)
         if len(words) == 2:
             return [c for c in MONSTER_DICT.keys()
@@ -131,6 +142,7 @@ class cmd_line(cmd.Cmd):
 
 
 def receiver(conn):
+    """Function, running in a different thread to receive messages"""
     while data := conn.recv(1024):
         MessageParser.parse(data.decode())
 
