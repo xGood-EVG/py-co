@@ -19,16 +19,20 @@ with open(os.path.join("common", "bat.txt")) as f:
 
 
 class Communicator():
+    """Class for managing connected users and sending them messages"""
 
     def __init__(self):
+        """Initiation"""
         self.logins = dict()  # addr -> login
         self.connections = dict()  # login -> socket
 
     def add_connection(self, conn, addr, login):
+        """This runs when a new user is connected"""
         self.logins[addr] = login
         self.connections[login] = conn
 
     def remove_connection(self, addr):
+        """This runs when users disconnect"""
         login = self.logins[addr]
         del self.logins[addr]
         del self.connections[login]
@@ -43,41 +47,50 @@ class Communicator():
         conn.sendall(msg.encode())
 
     def player_exists(self, login: str) -> bool:
+        """Check if player with specified login is still playing"""
         return True if self.connections.get(login, False) else False
 
 
 class Field:
+    """Class for the in-game field"""
 
     def __init__(self, x, y):
+        """Initiating field instance"""
         self._x, self._y = x, y
         self.field = list([0 for i in range(self._x)] for j in range(self._y))
         self.monsters_dict = {}
 
     @property
     def x(self):
+        """Return size of x axis"""
         return self._x
 
     @property
     def y(self):
+        """Return size of y axis"""
         return self._y
 
     def addmon(self, x, y, hp, name, msg, plr):
+        """Create a monster and pin it to a field's cell"""
         self.monsters_dict[name] = self.monsters_dict.get(name, 0) + 1
         x, y = int(x), int(y)
         self.field[x][y] = Monster(x, y, hp, name, msg, plr)
 
 
 class Player:
+    """Class for player"""
 
     direct_map = {"up": (0, -1), "down": (0, 1),
                   "left": (-1, 0), "right": (1, 0)}
 
     def __init__(self, field, login):
+        """Creating player instance with start coords and login"""
         self._x, self._y = 0, 0
         self.fld = field
         self.login = login
 
     def move(self, direction, conn):
+        """Move in a given direction"""
         self._x = (self._x
                    + self.__class__.direct_map[direction][0]) % self.fld.x
         self._y = (self._y
@@ -89,6 +102,7 @@ class Player:
         cm.send(conn, msg)
 
     def attack(self, name, damage, conn):
+        """Attack a monster, located in the same cell with the player"""
         if self.fld.field[self._x][self._y] and \
                 self.fld.field[self._x][self._y].name == name:
             result = self.fld.field[self._x][self._y].attacked(
@@ -101,12 +115,19 @@ class Player:
         return
 
     def sayall(self, *msg):
+        """Send message to all users"""
         cm.sendall(f"{self.login}: {' '.join(msg)}")
 
 
 class Monster:
+    """Class representing mosters"""
 
     def __init__(self, x, y, hp, name, msg, plr, func=None):
+        """
+        Initializing monster, need to provide his hp,
+        coords, name and message, which will appear, when
+        players meet him
+        """
         self.author = plr
         self._x, self._y, self.name = int(x), int(y), name
         self._msg, self._func = msg, func
@@ -121,13 +142,12 @@ class Monster:
             else:
                 self._func = lambda x: print(cowsay.cowsay(x, cow=name))
 
-    def greet(self):
-        self._func(self._msg)
-
     def __bool__(self):
+        """This is needed to check, if there's a monster in a cell"""
         return True
 
     def attacked(self, damage, login):
+        """Function called, when monster is attacked to deal damage"""
         dmg = min(damage, self._hp)
         msg = f"User {login} attacked {self.name}, damage {dmg}\n"
         self._hp -= min(damage, self._hp)
@@ -143,6 +163,7 @@ class Monster:
 
 
 def handler(conn, addr):
+    """This runs for each client to process his actions"""
     with conn:
         print('Connected by', addr)
         login = conn.recv(1024).decode()

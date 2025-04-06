@@ -83,7 +83,10 @@ class cmd_line(cmd.Cmd):
         self.socket.send(("sayall "+args).encode())
 
     def do_addmon(self, args):
-        """Add a monster with given attributes, required are name, coordinates, message and hp"""
+        """
+        Add a monster with given attributes, required are name, coordinates,
+        message and hp
+        """
         try:
             name, *rules = shlex.split(args)
             hello_ind = rules.index("hello")
