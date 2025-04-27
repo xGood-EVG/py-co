@@ -1,4 +1,5 @@
 
+
 tr_dict = {"ru_RU": {
         "Moved to ({x}, {y})": "Перемещение в ({x}, {y})",
         "Found {name} {msg}": "Found {name} {msg}",

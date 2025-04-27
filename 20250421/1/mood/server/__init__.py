@@ -93,10 +93,11 @@ class Field:
         """Return size of y axis"""
         return self._y
 
-    def addmon(self, x, y, hp, name, msg, plr):
+    def addmon(self, x, y, hp, name, *msg, plr):
         """Create a monster and pin it to a field's cell"""
         self.monsters_dict[name] = self.monsters_dict.get(name, 0) + 1
         x, y = int(x), int(y)
+        msg = " ".join(msg)
         self.monsters[x][y] = Monster(x, y, hp, name, msg, plr, self, self.cm)
 
 
@@ -164,7 +165,7 @@ class Monster:
         self.cm = cm
         ALL_MONSTERS.append(self)
         cm.sendall(
-          "User {login} added monster {name} to ({x}, {y}) saying {msg}\n",
+            "User {login} added monster {name} to ({x}, {y}) saying {msg}\n",
             {
                 "login": plr.login,
                 "name": name,
@@ -173,7 +174,7 @@ class Monster:
                 "msg": msg
             }
         )
-        cm.sendall("srv added monster {name}\n", {"name": name})
+        cm.sendall(f"srv added monster {name}\n", {})
         if self._func is None:
             if name == "jgsbat":
                 self._func = lambda x: print(cowsay.cowsay(x, cowfile=jgsbat))
@@ -196,7 +197,7 @@ class Monster:
         self._hp -= min(damage, self._hp)
         if self._hp == 0:
             msg += "{name} died\n"
-            msg += "srv died monster {name}\n"
+            msg += f"srv died monster {self.name}\n"
             self.fld.monsters[self._x][self._y] = 0
             self.fld.monsters_dict[self.name] -= 1
             ALL_MONSTERS.remove(self)
@@ -250,7 +251,7 @@ def handler(conn, addr, cm, fld):
             if info[0] == "move":
                 plr.move(info[1], conn)
             if info[0] == "addmon":
-                fld.addmon(*info[1:], plr)
+                fld.addmon(*info[1:], plr=plr)
             if info[0] == "attack":
                 info[2] = int(info[2])
                 plr.attack(*info[1:], conn)
@@ -275,3 +276,20 @@ def random_move():
             continue
         while not random.choice(ALL_MONSTERS).move(random.choice(list(DIRECTIONS.keys()))):
             continue
+
+
+def start_server(port=1337):
+    cm = Communicator()
+    fld = Field(FIELDX, FIELDY, cm)
+    port = port if len(sys.argv) < 2 else int(sys.argv[1])
+    host = "localhost" if len(sys.argv) < 3 else sys.argv[2]
+    movement = threading.Thread(target=random_move)
+    movement.start()
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        s.bind((host, port))
+        s.listen()
+        while True:
+            conn, addr = s.accept()
+            client = threading.Thread(target=handler, args=(conn, addr, cm, fld))
+            client.start()
