@@ -221,10 +221,13 @@ class Monster:
             self._x, self._y = next_x, next_y
             self.fld.monsters[self._x][self._y] = self
             for pl in self.fld.players[self._x][self._y]:
-                self.cm.send(self.cm.connections[pl.login], "Found {name} {msg}\n", {
-                    "name": self.name,
-                    "msg": self._msg
-                })
+                try:
+                    self.cm.sendall(self.cm.connections[pl.login], "Found {name} {msg}\n", {
+                        "name": self.name,
+                        "msg": self._msg
+                    })
+                except KeyError:
+                    pass
             return True
         return False
 

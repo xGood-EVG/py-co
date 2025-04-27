@@ -15,12 +15,13 @@ WEAPONS_LIST = {"sword": 10, "spear": 15, "axe": 20}
 dflt_wpn = "sword"
 MONSTER_DICT = {}
 LOGINED_USERS = set()
-field_x, field_y = 0, 0
+field_x, field_y = 100, 100
 
 
 def encounter(name, msg):
     """This happens when you meet a monster"""
     print(cowsay.cowsay(msg, cow=name))
+    print(cmd_line.prompt, end="", flush=True)
 
 
 class MessageParser():
@@ -67,7 +68,7 @@ class cmd_line(cmd.Cmd):
         self.timeout = timeout
         super().__init__(*args, **kwargs)
 
-    prompt = "(MUD) "
+    prompt = "(MUD) "    
 
     def do_up(self, args):
         """Move up"""
@@ -180,3 +181,28 @@ def receiver(conn):
     """Function, running in a different thread to receive messages"""
     while data := conn.recv(1024):
         MessageParser.parse(data.decode())
+
+def start_client(login="login", file_=""):
+    parser = ArgumentParser()
+    parser.add_argument("login", default=login, action="store", nargs="?")
+    parser.add_argument("port", action="store",
+                        default=1337, type=int, nargs='?')
+    parser.add_argument("host", action="store",
+                        default="localhost", nargs='?')
+    parser.add_argument("--file",
+                        default=file_)
+    args = parser.parse_args()
+    print(args.login)
+    print("<<< Welcome to Python-MUD 0.1 >>>")
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.connect((args.host, args.port))
+        s.send(args.login.encode())
+        recv = threading.Thread(target=receiver, args=(s, ))
+        recv.start()
+        if args.file:
+            with open(args.file) as f:
+                cmd_line(sock=s, stdin=f).cmdloop()
+        else:
+            cmd_line(sock=s).cmdloop()
+        s.shutdown(socket.SHUT_RDWR)
+    recv.join()
