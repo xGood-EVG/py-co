@@ -1,0 +1,75 @@
+# Russian (Russia) translations for PROJECT.
+# Copyright (C) 2025 ORGANIZATION
+# This file is distributed under the same license as the PROJECT project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2025.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2025-05-25 12:50+0300\n"
+"PO-Revision-Date: 2025-05-25 12:34+0300\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: ru_RU\n"
+"Language-Team: ru_RU <LL@li.org>\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
+"n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.17.0\n"
+
+#: mood/server/__init__.py:295
+msgid "Moved to ({x}, {y})"
+msgstr "Перемещение в ({x}, {y})"
+
+#: mood/server/__init__.py:296
+msgid "No {name} here"
+msgstr "Здесь нет {name}"
+
+#: mood/server/__init__.py:297
+msgid "User {login} added monster {name} to ({x}, {y}) saying {msg}"
+msgstr "Игрок {login} добавил монстра {name} в поле ({x}, {y}) говорящего {msg}"
+
+#: mood/server/__init__.py:298
+msgid "User {login} attacked {name}, damage {dmg}"
+msgstr "Игрок {login} атаковал {name}, урон {dmg}"
+
+#: mood/server/__init__.py:299
+msgid "{name} died"
+msgstr "{name} умер"
+
+#: mood/server/__init__.py:300
+msgid "Found {name}"
+msgstr "Обнаружен {name}"
+
+#: mood/server/__init__.py:301
+msgid "{name} now has {hp} hitpoint"
+msgid_plural "{name} now has {hp} hitpoints"
+msgstr[0] "{name} теперь имеет {hp} очко здоровья"
+msgstr[1] "{name} теперь имеет {hp} очка здоровья"
+msgstr[2] "{name} теперь имеет {hp} очков здоровья"
+
+#: mood/server/__init__.py:302
+msgid "{name} moved one cell {dir}"
+msgstr "{name} переместился на одну клетку {dir}"
+
+#: mood/server/__init__.py:303
+msgid "Login already in use!"
+msgstr "Логин уже используется!"
+
+#: mood/server/__init__.py:304
+msgid "User {login} logged in"
+msgstr "Игрок {login} подключился"
+
+#: mood/server/__init__.py:305
+msgid "Moving monsters: {state}"
+msgstr "Перемещения монстров: {state}"
+
+#: mood/server/__init__.py:306
+msgid "Set locale: {loc}"
+msgstr "Установлена локаль: {loc}"
+
+#: mood/server/__init__.py:307
+msgid "User {login} left the game"
+msgstr "Игрок {login} покинул игру"

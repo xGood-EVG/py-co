@@ -1,0 +1,17 @@
+[project]
+name = "mood"
+description = "MUD"
+version = "0.1"
+requires-python = ">=3.10"
+scripts = {client = "mood.mood.client.__main__:main", server = "mood.mood.server.__main__:main"}
+dependencies = ["python-cowsay"]
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.package-dir]
+mood = "."
+
+[tool.setuptools.package-data]
+mood = ["po/*/*/*.mo", "build/**", "mood/common/bat.txt"]
