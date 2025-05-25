@@ -1,0 +1,2 @@
+Не смог установить doit
+Не хватает файлов типа .doit.db и mood_language.pot ???

@@ -1,0 +1,1 @@
+addmon dragon hello hello hp 15 coords 1 1
