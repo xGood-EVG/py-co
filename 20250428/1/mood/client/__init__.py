@@ -37,8 +37,6 @@ class MessageParser():
                 print(f"{msg}\n{cmd_line.prompt if cmd_line.use_rawinput else ''}{readline.get_line_buffer()}",
                       end="",
                       flush=True)
-                if msg.startswith("Found"):
-                    encounter(*msg.split()[1:])
             else:
                 cmd = msg.split()
                 match cmd:
@@ -53,6 +51,8 @@ class MessageParser():
                         MONSTER_DICT[name] = MONSTER_DICT.get(name, 0) + 1
                     case ["srv", "died", "monster", name]:
                         MONSTER_DICT[name] -= 1
+                    case ["srv", "found", dragon, *message]:
+                        encounter(dragon, " ".join(message))
 
 
 class cmd_line(cmd.Cmd):

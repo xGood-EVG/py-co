@@ -46,7 +46,7 @@ class TestServer(unittest.TestCase):
     def test_3_encounter(self):
         self.socket.sendall("move right".encode())
         resp = self.socket.recv(1024).decode().split("\n")
-        correct = ["Moved to (1, 0)", "Found dragon hello", ""]
+        correct = ["Moved to (1, 0)", "Found dragon", "srv found dragon hello", ""]
         self.assertEqual(correct, resp)
 
     def test_4_attack(self):

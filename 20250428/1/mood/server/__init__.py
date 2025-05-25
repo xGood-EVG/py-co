@@ -11,7 +11,7 @@ import threading
 import os
 import time
 import functools
-from mood.common import translation
+from gettext import ngettext, gettext, translation, NullTranslations
 
 DIRECTIONS = {"up": (0, -1), "down": (0, 1),
                   "left": (-1, 0), "right": (1, 0)}
@@ -20,14 +20,26 @@ ALL_MONSTERS = list()
 dflt_wpn = "sword"
 FIELDX, FIELDY = 10, 10
 MOVE = "on"
+Messages = ()
+LOCALES = {}
 
-LOCALES = {
-    "ru_RU": functools.partial(translation.translate, locale="ru_RU"),
-    "en_EN": lambda x: x
-}
+def translate(msg, locale, fmt, n=0):
+    if n:
+        for x in msg.split("\n"):
+            print(LOCALES[locale].ngettext(x, x+"s", n).format(**fmt)
+                        if "hitpoint" in x
+                        else LOCALES[locale].gettext(x).format(**fmt)
+                        if not x.startswith("srv") and x != ""
+                        else x)
+        msg = "\n".join(LOCALES[locale].ngettext(x, x+"s", n).format(**fmt)
+                        if "hitpoint" in x
+                        else LOCALES[locale].gettext(x).format(**fmt)
+                        if not x.startswith("srv") and x != ""
+                        else x 
+                        for x in msg.split("\n"))
+    else:
+        msg = "\n".join(LOCALES[locale].gettext(x).format(**fmt) if not x.startswith("srv") and x != "" else x for x in msg.split("\n"))
 
-def translate(msg, locale, fmt):
-    msg = "\n".join(LOCALES[locale](x).format(**fmt) if not x.startswith("srv") else x for x in msg.split("\n"))
     return msg
 
 with open(os.path.join("mood", "common", "bat.txt")) as f:
@@ -57,8 +69,11 @@ class Communicator():
 
     def sendall(self, msg: str, fmt: dict):
         """Sends given message to all logined users"""
-        for _, conn in self.connections.items():
-            conn.sendall(translate(msg, self.locales[conn], fmt).encode())
+        n = 0
+        if "hitpoint" in msg:
+            n = fmt["hp"]
+        for _, conn in self.connections.items():    
+            conn.sendall(translate(msg, self.locales[conn], fmt, n).encode())
 
     def send(self, conn: socket.socket, msg: str, fmt: dict):
         """Sends given message to given socket"""
@@ -125,8 +140,9 @@ class Player:
         msg = "Moved to ({x}, {y})\n"
         if self.fld.monsters[self._x][self._y]:
             name = self.fld.monsters[self._x][self._y].name
-            fmt.update({"name": name, "msg": self.fld.monsters[self._x][self._y]._msg})
-            msg += "Found {name} {msg}\n"
+            fmt.update({"name": name})
+            msg += "Found {name}\n"
+            msg += f"srv found {name} {self.fld.monsters[self._x][self._y]._msg}\n"
         self.cm.send(conn, msg, fmt)
 
     def attack(self, name, damage, conn):
@@ -205,7 +221,7 @@ class Monster:
             return True
         else:
             fmt.update({"hp": self._hp})
-            msg += "{name} now has {hp}\n"
+            msg += "{name} now has {hp} hitpoint\n"
             self.cm.sendall(msg, fmt)
             return False
 
@@ -221,7 +237,7 @@ class Monster:
             self._x, self._y = next_x, next_y
             self.fld.monsters[self._x][self._y] = self
             for pl in self.fld.players[self._x][self._y]:
-                self.cm.send(self.cm.connections[pl.login], "Found {name} {msg}\n", {
+                self.cm.send(self.cm.connections[pl.login], "Found {name}\nsrv found {name} {msg}\n", {
                     "name": self.name,
                     "msg": self._msg
                 })
@@ -279,6 +295,27 @@ def random_move():
 
 
 def start_server(port=1337):
+    global Messages, LOCALES
+    Messages = (
+        gettext("Moved to ({x}, {y})"),
+        gettext("No {name} here"),
+        gettext("User {login} added monster {name} to ({x}, {y}) saying {msg}"),
+        gettext("User {login} attacked {name}, damage {dmg}"),
+        gettext("{name} died"),
+        gettext("Found {name}"),
+        ngettext("{name} now has {hp} hitpoint", "{name} now has {hp} hitpoints", 1),
+        gettext("{name} moved one cell {dir}"),
+        gettext("Login already in use!"),
+        gettext("User {login} logged in"),
+        gettext("Moving monsters: {state}"),
+        gettext("Set locale: {loc}"),
+        gettext("User {login} left the game")
+    )
+
+    LOCALES = {
+        "ru_RU": translation("mood_lang", "po", languages=["ru_RU.UTF-8"], fallback=False),
+        "en_EN": NullTranslations()
+    }
     cm = Communicator()
     fld = Field(FIELDX, FIELDY, cm)
     port = port if len(sys.argv) < 2 else int(sys.argv[1])
