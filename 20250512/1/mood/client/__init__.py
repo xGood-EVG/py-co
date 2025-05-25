@@ -22,12 +22,16 @@ with open(os.path.join(os.path.dirname(__file__), "..", "common", "bat.txt")) as
     jgsbat = cowsay.read_dot_cow(f)
 
 
-def encounter(name, msg):
-    """This happens when you meet a monster"""
-    if name == "jgsbat":
+def encounter(name: str, msg: str) -> None:
+    """Срабатывает, когда игрок встретил монстра `name`."""
+    if name == "jgsbat":                         # ваш кастомный «летучий дракон»
         print(cowsay.cowsay(msg, cowfile=jgsbat))
     else:
-        print(cowsay.cowsay(msg, cow=name))
+        # 1) если cowsay знает такую фигурку → используем её
+        # 2) иначе выводим дефолтную корову
+        cow = name if name in cowsay.list_cows() else "default"
+        print(cowsay.cowsay(msg, cow=cow))
+
     print(cmd_line.prompt, end="", flush=True)
 
 
@@ -64,6 +68,8 @@ class MessageParser():
 
 class cmd_line(cmd.Cmd):
     """Shell for the game"""
+
+    valid_monsters = list(cowsay.list_cows()) + ["jgsbat"]
 
     def __init__(self, sock, *args, **kwargs):
         """Initialize socket for sending messages"""
@@ -154,6 +160,24 @@ class cmd_line(cmd.Cmd):
             print("Invalid arguments")
             return
         self.socket.sendall(f"addmon {x} {y} {hp} {name} {hello}".encode())
+
+    def complete_addmon(self, text, line, begidx, endidx):
+        """
+        TAB-дополнение:
+        • первым параметром подсказывает имена монстров
+        • дальше — ключевые слова hp/coords/hello,
+          причём уже использованные больше не предлагает
+        """
+        args = shlex.split(line[:begidx])        # что уже введено до курсора
+
+        # позиция 0 — имя монстра
+        if len(args) == 1:
+            return [m for m in self.valid_monsters if m.startswith(text)]
+
+        keywords = ["hp", "coords", "hello"]
+        used = {a for a in args[1:] if a in keywords}
+        return [k for k in keywords
+                if k not in used and k.startswith(text)]
 
     def do_attack(self, args):
         """Attack the monster in the player's cell with weapon, if specified"""
