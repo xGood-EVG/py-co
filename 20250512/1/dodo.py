@@ -3,6 +3,7 @@ import os
 
 DOIT_CONFIG = {'default_tasks': ["html"]}
 
+
 def cleaner():
     if os.path.exists("build"):
         shutil.rmtree("build")
@@ -12,6 +13,7 @@ def cleaner():
         os.remove("mood_lang.pot")
     print("Finished cleaning")
 
+
 def task_html():
     return {
         'actions': ["make html"],
@@ -20,17 +22,20 @@ def task_html():
         'clean': [cleaner]
     }
 
+
 def task_test():
     return {
         'actions': ["python3 -m unittest"],
         'file_dep': ["test_client.py", "test_server.py"]
     }
 
+
 def task_extract():
     return {
         'actions': ["pybabel extract . -o mood_lang.pot"],
         'targets': ["mood_lang.pot"]
     }
+
 
 def task_update():
     return {
@@ -39,12 +44,14 @@ def task_update():
         'targets': ["po/ru_RU.UTF-8/LC_MESSAGES/mood_lang.po"]
     }
 
+
 def task_compile():
     return {
         'actions': ["pybabel compile -D mood_lang -d po -l ru_RU.UTF-8"],
         'file_dep': ["po/ru_RU.UTF-8/LC_MESSAGES/mood_lang.po"],
         'targets': ["po/ru_RU.UTF-8/LC_MESSAGES/mood_lang.mo"]
     }
+
 
 def task_i18n():
     return {

@@ -1,8 +1,9 @@
 import unittest
 from unittest import mock
-import io
-import sys
+# import io
+# import sys
 from mood.client import *
+
 
 class TestClient(unittest.TestCase):
 
@@ -33,7 +34,7 @@ class TestClient(unittest.TestCase):
             send = sock.mock_calls[4].args[0]
             print(send)
             self.assertEqual(send, b'addmon 1 1 15 dragon hello')
-    
+
     def test_4_addmon(self):
         with (
             mock.patch('socket.socket', autospec=True) as sock,

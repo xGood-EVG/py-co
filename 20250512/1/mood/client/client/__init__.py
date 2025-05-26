@@ -67,7 +67,7 @@ class cmd_line(cmd.Cmd):
             def timeout(): time.sleep(1)
         self.timeout = timeout
         super().__init__(*args, **kwargs)
-    
+
     prompt = "(MUD) "
 
     def do_up(self, args):
@@ -89,7 +89,7 @@ class cmd_line(cmd.Cmd):
     def do_sayall(self, args):
         """Send message for all users"""
         self.socket.send(("sayall "+args).encode())
-    
+
     def do_movemonsters(self, args):
         """Turn on/off the monsters movements"""
         if args not in ["on", "off"]:
@@ -105,10 +105,12 @@ class cmd_line(cmd.Cmd):
         self.socket.send(("locale "+args).encode())
 
     def postcmd(self, stop: bool, line: str) -> bool:
+        """Hook method executed just after a command dispatch is finished."""
         self.timeout()
         return super().postcmd(stop, line)
-    
+
     def postloop(self):
+        """Hook method executed once when the cmdloop() method is about to return."""
         return 1
 
     def do_addmon(self, args):
@@ -171,7 +173,7 @@ class cmd_line(cmd.Cmd):
         if len(words) == 3:
             return WEAPONS_LIST.keys()
         return [c for c in WEAPONS_LIST.keys() if c.startswith(text)]
-    
+
     def do_EOF(self, args):
         """When EOF"""
         return 1
@@ -181,6 +183,7 @@ def receiver(conn):
     """Function, running in a different thread to receive messages"""
     while data := conn.recv(1024):
         MessageParser.parse(data.decode())
+
 
 def start_client(login="login", file_=""):
     parser = ArgumentParser()

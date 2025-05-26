@@ -2,7 +2,7 @@
 
 import sys
 import os
-import io
+# import io
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 from client import *

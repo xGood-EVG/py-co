@@ -42,7 +42,7 @@ class TestServer(unittest.TestCase):
         correct = ["User login added monster dragon to (1, 0) saying hello",
                    "srv added monster dragon", ""]
         self.assertEqual(correct, resp)
-    
+
     def test_3_encounter(self):
         self.socket.sendall("move right".encode())
         resp = self.socket.recv(1024).decode().split("\n")
